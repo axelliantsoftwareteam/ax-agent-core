@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .cost import CostTracker
 from .memory import ConversationMemory, Message
@@ -14,15 +14,15 @@ from .tooling import ToolExecutionPolicy, ToolExecutionResult, ToolExecutor, Too
 @dataclass(frozen=True)
 class ParsedToolCall:
     name: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
 
 
 @dataclass
 class AgentResponse:
     content: str
     session_id: str
-    tool_result: Optional[ToolExecutionResult] = None
-    provider_response: Optional[ProviderResponse] = None
+    tool_result: ToolExecutionResult | None = None
+    provider_response: ProviderResponse | None = None
 
 
 class AgentRuntime:
@@ -32,10 +32,10 @@ class AgentRuntime:
         router: ModelRouter,
         memory: ConversationMemory,
         cost_tracker: CostTracker,
-        logger: Optional[StructuredLogger] = None,
-        telemetry: Optional[OpenTelemetryHook] = None,
-        executor: Optional[ToolExecutor] = None,
-        execution_policy: Optional[ToolExecutionPolicy] = None,
+        logger: StructuredLogger | None = None,
+        telemetry: OpenTelemetryHook | None = None,
+        executor: ToolExecutor | None = None,
+        execution_policy: ToolExecutionPolicy | None = None,
     ) -> None:
         self._registry = registry
         self._router = router
@@ -102,7 +102,7 @@ class AgentRuntime:
         return AgentResponse(content=content, session_id=session_id, tool_result=result)
 
     @staticmethod
-    def _parse_tool_call(user_input: str) -> Optional[ParsedToolCall]:
+    def _parse_tool_call(user_input: str) -> ParsedToolCall | None:
         text = user_input.strip()
         if not text.startswith("tool:"):
             return None
@@ -110,7 +110,7 @@ class AgentRuntime:
         # format: tool:<tool_name> {json-payload}
         parts = text.split(" ", 1)
         tool_name = parts[0][5:].strip()
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
 
         if len(parts) == 2 and parts[1].strip():
             payload = json.loads(parts[1])

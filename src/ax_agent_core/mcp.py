@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .tooling import ToolExecutionPolicy, ToolExecutor, ToolRegistry
 
@@ -10,7 +10,7 @@ from .tooling import ToolExecutionPolicy, ToolExecutor, ToolRegistry
 class MCPToolDescriptor:
     name: str
     description: str
-    input_schema: Dict[str, Any]
+    input_schema: dict[str, Any]
 
 
 class MCPBridge:
@@ -23,14 +23,14 @@ class MCPBridge:
     def __init__(
         self,
         registry: ToolRegistry,
-        executor: Optional[ToolExecutor] = None,
-        policy: Optional[ToolExecutionPolicy] = None,
+        executor: ToolExecutor | None = None,
+        policy: ToolExecutionPolicy | None = None,
     ) -> None:
         self._registry = registry
         self._executor = executor or ToolExecutor()
         self._policy = policy or ToolExecutionPolicy()
 
-    def list_tools(self) -> List[MCPToolDescriptor]:
+    def list_tools(self) -> list[MCPToolDescriptor]:
         return [
             MCPToolDescriptor(
                 name=tool.name,
@@ -40,7 +40,7 @@ class MCPBridge:
             for tool in self._registry.list()
         ]
 
-    def call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def call_tool(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         tool = self._registry.get(name)
         result = self._executor.execute(tool, arguments, self._policy)
         return {
@@ -52,7 +52,7 @@ class MCPBridge:
             "error": result.error,
         }
 
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {
             "status": "ok",
             "tool_count": len(self._registry.list()),

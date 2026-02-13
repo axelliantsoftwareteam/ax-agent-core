@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any
 
 from .config import AppConfig, load_config
 from .cost import StubCostTracker
@@ -83,12 +84,12 @@ class SafeMathEvaluator(ast.NodeVisitor):
 def build_registry() -> ToolRegistry:
     registry = ToolRegistry()
 
-    def math_tool(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def math_tool(payload: dict[str, Any]) -> dict[str, Any]:
         evaluator = SafeMathEvaluator()
         result = evaluator.evaluate(payload["expression"])
         return {"result": result}
 
-    def http_get_stub(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def http_get_stub(payload: dict[str, Any]) -> dict[str, Any]:
         url = payload["url"]
         status = 200
         if "error" in url:
@@ -100,7 +101,7 @@ def build_registry() -> ToolRegistry:
             "body": {"service": "http_get_stub", "healthy": status == 200},
         }
 
-    def json_formatter(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def json_formatter(payload: dict[str, Any]) -> dict[str, Any]:
         return {"formatted": pretty_json(payload["payload"])}
 
     registry.register(
@@ -167,7 +168,7 @@ def _build_router(config: AppConfig) -> ModelRouter:
     return ModelRouter(providers=providers, fallback_order=fallback_order)
 
 
-def build_demo_agent(config_path: Optional[str] = None) -> DemoAgent:
+def build_demo_agent(config_path: str | None = None) -> DemoAgent:
     config = load_config(config_path)
     registry = build_registry()
 
@@ -197,7 +198,7 @@ def build_demo_agent(config_path: Optional[str] = None) -> DemoAgent:
     return DemoAgent(runtime=runtime, mcp_bridge=bridge)
 
 
-def default_scripted_prompts() -> List[str]:
+def default_scripted_prompts() -> list[str]:
     return [
         'tool:math {"expression": "(12 / 3) + 7"}',
         'tool:http_get {"url": "https://status.axelliant.internal/health"}',
@@ -206,8 +207,12 @@ def default_scripted_prompts() -> List[str]:
     ]
 
 
-def run_demo(scripted: bool = False, prompts: Optional[Iterable[str]] = None) -> None:
-    agent = build_demo_agent()
+def run_demo(
+    scripted: bool = False,
+    prompts: Iterable[str] | None = None,
+    config_path: str | None = None,
+) -> None:
+    agent = build_demo_agent(config_path=config_path)
 
     if scripted:
         for prompt in list(prompts or default_scripted_prompts()):
