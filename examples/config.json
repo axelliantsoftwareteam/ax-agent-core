@@ -1,0 +1,5 @@
+{
+  "provider": "mock",
+  "tool_retries": 1,
+  "tool_timeout_s": 5
+}
