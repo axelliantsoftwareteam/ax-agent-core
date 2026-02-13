@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Reporting a Vulnerability
-Please report security issues by emailing security@example.com. Include:
+Please report security issues by emailing security@axelliant.com. Include:
 - Description of the issue
 - Steps to reproduce
 - Affected versions
