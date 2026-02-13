@@ -1,5 +1,7 @@
 # Ops Assistant sample prompts
-- tool:math {"expression": "12 / 3 + 7"}
-- tool:http_get {"url": "https://status.internal/health"}
-- tool:json_formatter {"payload": {"env": "prod", "uptime": 12345}}
-- Provide a short incident summary for a failed deploy.
+
+tool:math {"expression": "12 / 3 + 7"}
+tool:http_get {"url": "https://status.axelliant.internal/health"}
+tool:http_get {"url": "https://status.axelliant.internal/error"}
+tool:json_formatter {"payload": {"env": "prod", "uptime_seconds": 12345}}
+Summarize incident impact for the above health checks.
