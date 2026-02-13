@@ -3,14 +3,14 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
 class AppConfig:
     provider: str = "mock"
-    fallback_order: List[str] | None = None
-    openai_api_key: Optional[str] = None
+    fallback_order: list[str] | None = None
+    openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     tool_timeout_s: float = 5.0
     tool_retries: int = 1
@@ -19,10 +19,10 @@ class AppConfig:
     otel_enabled: bool = False
 
 
-def load_config(path: Optional[str] = None) -> AppConfig:
-    file_data: Dict[str, Any] = {}
+def load_config(path: str | None = None) -> AppConfig:
+    file_data: dict[str, Any] = {}
     if path:
-        with open(path, "r", encoding="utf-8") as handle:
+        with open(path, encoding="utf-8") as handle:
             file_data = json.load(handle)
 
     raw = {
@@ -73,13 +73,13 @@ def validate_config(config: AppConfig) -> None:
         raise ValueError("tool_retry_backoff_s must be >= 0")
 
 
-def _env_or(file_data: Dict[str, Any], key: str, env_name: str, default: Any) -> Any:
+def _env_or(file_data: dict[str, Any], key: str, env_name: str, default: Any) -> Any:
     if env_name in os.environ and os.environ[env_name] != "":
         return os.environ[env_name]
     return file_data.get(key, default)
 
 
-def _bool_env_or(file_data: Dict[str, Any], key: str, env_name: str, default: bool) -> bool:
+def _bool_env_or(file_data: dict[str, Any], key: str, env_name: str, default: bool) -> bool:
     if env_name in os.environ and os.environ[env_name] != "":
         return os.environ[env_name].strip().lower() in {"1", "true", "yes", "on"}
     value = file_data.get(key, default)

@@ -30,16 +30,16 @@ Most agent demos are either toy-level or tightly coupled to one provider stack. 
 
 ```mermaid
 flowchart LR
-    U[User / CLI / API] --> A[Agent Runtime]
-    A --> T[Tool Registry]
-    T --> E[Tool Executor (schema, retry, timeout)]
-    A --> R[Model Router]
-    R --> P1[MockProvider]
-    R --> P2[OpenAIProvider Stub]
-    A --> M[Conversation Memory]
-    A --> C[Cost Tracker]
-    A --> O[Telemetry + Structured Logs]
-    T --> B[MCP Bridge]
+    U["User CLI API"] --> A["Agent Runtime"]
+    A --> T["Tool Registry"]
+    T --> E["Tool Executor schema retry timeout"]
+    A --> R["Model Router"]
+    R --> P1["MockProvider"]
+    R --> P2["OpenAIProvider Stub"]
+    A --> M["Conversation Memory"]
+    A --> C["Cost Tracker"]
+    A --> O["Telemetry and Structured Logs"]
+    T --> B["MCP Bridge"]
 ```
 
 ## Quickstart

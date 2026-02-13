@@ -12,7 +12,7 @@ from .providers import ProviderError
 
 
 def _cmd_run_demo(args: argparse.Namespace) -> int:
-    run_demo(scripted=args.scripted)
+    run_demo(scripted=args.scripted, config_path=args.config)
     return 0
 
 
@@ -42,6 +42,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--scripted",
         action="store_true",
         help="Run non-interactive scripted prompts and exit.",
+    )
+    run_demo_parser.add_argument(
+        "--config",
+        default="examples/config.json",
+        help="Path to JSON config file",
     )
     run_demo_parser.set_defaults(func=_cmd_run_demo)
 

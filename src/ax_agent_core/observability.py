@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Any, Dict, Generator, Optional
+from typing import Any
 
 
 class _JsonFormatter(logging.Formatter):
@@ -77,7 +78,7 @@ class OpenTelemetryHook:
     def span(
         self,
         name: str,
-        attributes: Optional[Dict[str, Any]] = None,
+        attributes: dict[str, Any] | None = None,
     ) -> Generator[None, None, None]:
         if not self._available or self._tracer is None:
             yield

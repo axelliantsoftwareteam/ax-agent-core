@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 class ToolSchemaError(ValueError):
@@ -27,7 +28,7 @@ class ToolExecutionResult:
     tool_name: str
     success: bool
     output: Any = None
-    error: Optional[str] = None
+    error: str | None = None
     duration_ms: int = 0
     attempts: int = 0
 
@@ -36,13 +37,13 @@ class ToolExecutionResult:
 class ToolDefinition:
     name: str
     description: str
-    input_schema: Dict[str, Any]
-    handler: Callable[[Dict[str, Any]], Any]
+    input_schema: dict[str, Any]
+    handler: Callable[[dict[str, Any]], Any]
 
 
 @dataclass
 class ToolRegistry:
-    _tools: Dict[str, ToolDefinition] = field(default_factory=dict)
+    _tools: dict[str, ToolDefinition] = field(default_factory=dict)
 
     def register(self, tool: ToolDefinition) -> None:
         if tool.name in self._tools:
@@ -55,7 +56,7 @@ class ToolRegistry:
         except KeyError as exc:
             raise KeyError(f"Unknown tool: {name}") from exc
 
-    def list(self) -> List[ToolDefinition]:
+    def list(self) -> list[ToolDefinition]:
         return sorted(self._tools.values(), key=lambda item: item.name)
 
 
@@ -71,10 +72,10 @@ class ToolSchemaValidator:
     - minimum/maximum for numbers
     """
 
-    def validate(self, schema: Dict[str, Any], payload: Dict[str, Any]) -> None:
+    def validate(self, schema: dict[str, Any], payload: dict[str, Any]) -> None:
         self._validate_value("$", schema, payload)
 
-    def _validate_value(self, path: str, schema: Dict[str, Any], value: Any) -> None:
+    def _validate_value(self, path: str, schema: dict[str, Any], value: Any) -> None:
         schema_type = schema.get("type")
         if schema_type and not self._matches_type(schema_type, value):
             raise ToolSchemaError(f"{path} expected type {schema_type}")
@@ -91,7 +92,7 @@ class ToolSchemaValidator:
         elif schema_type in {"number", "integer"}:
             self._validate_number(path, schema, value)
 
-    def _validate_object(self, path: str, schema: Dict[str, Any], value: Any) -> None:
+    def _validate_object(self, path: str, schema: dict[str, Any], value: Any) -> None:
         if not isinstance(value, dict):
             raise ToolSchemaError(f"{path} must be an object")
 
@@ -110,7 +111,7 @@ class ToolSchemaValidator:
                 raise ToolSchemaError(f"{path}.{field_name} is not allowed")
             self._validate_value(f"{path}.{field_name}", properties[field_name], field_value)
 
-    def _validate_array(self, path: str, schema: Dict[str, Any], value: Any) -> None:
+    def _validate_array(self, path: str, schema: dict[str, Any], value: Any) -> None:
         if not isinstance(value, list):
             raise ToolSchemaError(f"{path} must be an array")
         item_schema = schema.get("items")
@@ -119,7 +120,7 @@ class ToolSchemaValidator:
         for index, item in enumerate(value):
             self._validate_value(f"{path}[{index}]", item_schema, item)
 
-    def _validate_string(self, path: str, schema: Dict[str, Any], value: Any) -> None:
+    def _validate_string(self, path: str, schema: dict[str, Any], value: Any) -> None:
         if not isinstance(value, str):
             return
         min_length = schema.get("minLength")
@@ -129,7 +130,7 @@ class ToolSchemaValidator:
         if max_length is not None and len(value) > int(max_length):
             raise ToolSchemaError(f"{path} exceeds maxLength={max_length}")
 
-    def _validate_number(self, path: str, schema: Dict[str, Any], value: Any) -> None:
+    def _validate_number(self, path: str, schema: dict[str, Any], value: Any) -> None:
         if not isinstance(value, (int, float)) or isinstance(value, bool):
             return
         minimum = schema.get("minimum")
@@ -158,19 +159,19 @@ class ToolSchemaValidator:
 
 
 class ToolExecutor:
-    def __init__(self, validator: Optional[ToolSchemaValidator] = None) -> None:
+    def __init__(self, validator: ToolSchemaValidator | None = None) -> None:
         self._validator = validator or ToolSchemaValidator()
 
     def execute(
         self,
         tool: ToolDefinition,
-        payload: Dict[str, Any],
-        policy: Optional[ToolExecutionPolicy] = None,
+        payload: dict[str, Any],
+        policy: ToolExecutionPolicy | None = None,
     ) -> ToolExecutionResult:
         exec_policy = policy or ToolExecutionPolicy()
         started = time.monotonic()
         attempts = 0
-        last_error: Optional[str] = None
+        last_error: str | None = None
 
         max_attempts = exec_policy.retries + 1
         for attempt in range(1, max_attempts + 1):
@@ -210,19 +211,22 @@ class ToolExecutor:
 
     def _run_with_timeout(
         self,
-        handler: Callable[[Dict[str, Any]], Any],
-        payload: Dict[str, Any],
-        timeout_s: Optional[float],
+        handler: Callable[[dict[str, Any]], Any],
+        payload: dict[str, Any],
+        timeout_s: float | None,
     ) -> Any:
         if timeout_s is None or timeout_s <= 0:
             return handler(payload)
 
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(handler, payload)
-            try:
-                return future.result(timeout=timeout_s)
-            except FutureTimeout as exc:
-                raise ToolExecutionError("tool execution timed out") from exc
+        executor = ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(handler, payload)
+        try:
+            return future.result(timeout=timeout_s)
+        except FutureTimeout as exc:
+            future.cancel()
+            raise ToolExecutionError("tool execution timed out") from exc
+        finally:
+            executor.shutdown(wait=False, cancel_futures=True)
 
 
 def pretty_json(data: Any) -> str:
