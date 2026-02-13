@@ -8,4 +8,4 @@ We are committed to providing a welcoming and harassment-free experience for eve
 - Focus on constructive feedback.
 
 ## Enforcement
-Report issues to community@example.com. We will review and respond promptly.
+Report issues to info@axelliant.com or open a PR. We will review and respond promptly.
