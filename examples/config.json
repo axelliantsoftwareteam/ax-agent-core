@@ -1,5 +1,10 @@
 {
   "provider": "mock",
+  "fallback_order": ["openai", "mock"],
+  "openai_model": "gpt-4o-mini",
+  "tool_timeout_s": 3.0,
   "tool_retries": 1,
-  "tool_timeout_s": 5
+  "tool_retry_backoff_s": 0.05,
+  "log_level": "INFO",
+  "otel_enabled": false
 }

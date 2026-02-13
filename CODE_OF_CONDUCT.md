@@ -1,11 +1,26 @@
 # Code of Conduct
 
-We are committed to providing a welcoming and harassment-free experience for everyone.
+This project follows a professional, respectful, and inclusive collaboration model.
 
-## Our Standards
-- Be respectful and considerate.
-- Assume good intent.
-- Focus on constructive feedback.
+## Expected Behavior
+
+- Communicate with respect and technical clarity.
+- Focus critiques on code, not people.
+- Assume good intent while holding a high quality bar.
+- Avoid harassment, discrimination, or abusive language.
+
+## Unacceptable Behavior
+
+- Personal attacks or intimidation.
+- Harassment of any kind.
+- Publishing private information without consent.
+- Disruptive behavior that blocks constructive collaboration.
 
 ## Enforcement
-Report issues to info@axelliant.com or open a PR. We will review and respond promptly.
+
+Project maintainers may remove comments, reject contributions, or restrict participation for violations.
+
+## Reporting
+
+Report incidents to `info@axelliant.com`. For security-sensitive incidents, use `security@axelliant.com`.
+Website: `https://axelliant.com`
