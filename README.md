@@ -32,7 +32,7 @@ Most agent demos are either toy-level or tightly coupled to one provider stack. 
 flowchart LR
     U[User / CLI / API] --> A[Agent Runtime]
     A --> T[Tool Registry]
-    T --> E[Tool Executor\n(schema + retry + timeout)]
+    T --> E[Tool Executor (schema, retry, timeout)]
     A --> R[Model Router]
     R --> P1[MockProvider]
     R --> P2[OpenAIProvider Stub]
